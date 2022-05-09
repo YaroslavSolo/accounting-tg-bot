@@ -1,12 +1,17 @@
 from django.core.management.base import BaseCommand
 
-from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
-from aiogram import Bot
 
-import os
+from bot.bot_init import bot, dispatcher
+from bot.handlers import product_handlers, order_handlers, other_handlers
 
-from bot.handlers import echo, common
+
+async def error_handler(update, error):
+    if error is ValueError:
+        pass
+    else:
+        print(error)
+    return True
 
 
 class Command(BaseCommand):
@@ -19,11 +24,10 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Telegram Bot stopped successfully'))
 
     def handle(self, *args, **options):
-        bot = Bot(token=os.getenv('BOT_API_TOKEN'))
-        dispatcher = Dispatcher(bot)
-
-        echo.register_handlers(dispatcher)
-        common.register_handlers(dispatcher)
+        dispatcher.register_errors_handler(error_handler)
+        product_handlers.register_handlers(dispatcher)
+        order_handlers.register_handlers(dispatcher)
+        other_handlers.register_handlers(dispatcher)
 
         executor.start_polling(
             dispatcher,
