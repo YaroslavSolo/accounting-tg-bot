@@ -14,22 +14,26 @@ class MenuKeyboardStates(StatesGroup):
     product_edit = State()
     order = State()
     order_edit = State()
+    statistics_period_start = State()
+    statistics_period_end = State()
+    statistics_select_slice = State()
 
 
 @sync_to_async
-def save_or_create_user(user_id):
+def save_or_create_user(user_id, username=None):
     user, flag = User.objects.get_or_create(telegram_id=user_id)
+    if username != user.username and username is not None:
+        user.username = username
     user.save()
     return user, flag
 
 
 async def start(message: types.Message, state: FSMContext):
     await state.finish()
-    _, is_new = await save_or_create_user(message.chat.id)
+    _, is_new = await save_or_create_user(message.chat.id, message.from_user.username)
     greet_message = f'С возвращением, {message.from_user.first_name}!'
     if is_new:
         greet_message = f'Привет, {message.from_user.first_name}!\nЭто бот для учета, начнем работу!'
-
     await message.answer(greet_message, reply_markup=main_kb)
 
 
@@ -49,7 +53,8 @@ async def order_menu(message: types.Message):
 
 
 async def statistics_menu(message: types.Message):
-    await message.answer('Раздел статистики еще в разработке ⚙️')
+    await MenuKeyboardStates.statistics_period_start.set()
+    await message.answer('Введите дату начала периода для подсчета статистики в формате дд.мм.гггг:')
 
 
 async def clear_products_handler(message: types.Message):

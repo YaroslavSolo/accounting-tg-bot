@@ -11,9 +11,8 @@ from aiogram.types import ReplyKeyboardRemove, InlineKeyboardButton
 from orders.service import *
 from products.service import *
 from bot.validators.order_validators import *
-from bot.validators.common import *
+from bot.validators.common_validators import *
 from bot.keyboards.common import main_kb, build_product_selection_kb
-from bot.handlers.other_handlers import MenuKeyboardStates
 
 
 offset = 0
@@ -43,7 +42,7 @@ async def add_order_description(message: types.Message, state: FSMContext):
 
 
 async def add_order_deadline_date(message: types.Message, state: FSMContext):
-    await validate_deadline_date(message)
+    await validate_date(message)
     async with state.proxy() as order:
         deadline = datetime.datetime.strptime(message.text, '%d.%m.%Y')
         order['deadline_date'] = deadline
@@ -72,7 +71,7 @@ async def product_list_next(callback: types.CallbackQuery):
     global offset
     product_count = await get_products_count(callback.message.chat.id)
     if offset + PRODUCT_NAMES_LIMIT > product_count - 1:
-        await callback.answer('Просмотрены все товары')
+        await callback.answer('Показан конец списка')
         return
 
     offset += PRODUCT_NAMES_LIMIT
@@ -141,7 +140,6 @@ async def add_order_finish(callback: types.CallbackQuery, state: FSMContext):
 
 
 def register_handlers(dispatcher: Dispatcher):
-    dispatcher.register_message_handler(add_order, commands=['Добавить'], state=MenuKeyboardStates.order)
     dispatcher.register_message_handler(add_order_description, state=AddOrderStates.description)
     dispatcher.register_message_handler(add_order_deadline_date, state=AddOrderStates.deadline_date)
     dispatcher.register_message_handler(add_order_deadline_time, state=AddOrderStates.deadline_time)

@@ -3,8 +3,8 @@ from tgusers.models import User
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=64, null=False, unique=True, blank=False)
-    description = models.TextField(blank=True, null=False, max_length=250)
+    name = models.CharField(max_length=64, blank=False, null=False, unique=True)
+    description = models.CharField(max_length=250, blank=True, null=False)
     price = models.PositiveIntegerField(default=0)  # in rubles
     production_time = models.PositiveIntegerField(default=0)  # in days
     amount = models.PositiveIntegerField(default=0, null=False)

@@ -1,4 +1,4 @@
-from .common import raise_if_error
+from .common_validators import raise_if_error
 from products.service import *
 
 

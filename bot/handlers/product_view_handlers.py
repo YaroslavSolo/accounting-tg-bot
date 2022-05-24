@@ -4,7 +4,6 @@ from aiogram.dispatcher import FSMContext
 from products.service import *
 from bot.bot_init import bot, dispatcher
 from bot.keyboards.common import main_kb, build_pagination_kb
-from bot.handlers.other_handlers import MenuKeyboardStates
 
 
 offset = 0
@@ -26,7 +25,7 @@ async def view_product_next(callback: types.CallbackQuery):
     global offset
     product_count = await get_products_count(callback.message.chat.id)
     if offset + PRODUCT_LIMIT > product_count - 1:
-        await callback.answer('Просмотрены все товары')
+        await callback.answer('Показан конец списка')
         return
 
     offset += PRODUCT_LIMIT
@@ -58,6 +57,5 @@ async def view_product_prev(callback: types.CallbackQuery):
 
 
 def register_handlers(dispatcher: Dispatcher):
-    dispatcher.register_message_handler(view_product, commands=['Посмотреть'], state=MenuKeyboardStates.product)
     dispatcher.register_callback_query_handler(view_product_next, text='next_product')
     dispatcher.register_callback_query_handler(view_product_prev, text='prev_product')

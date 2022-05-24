@@ -5,11 +5,12 @@ from products.models import Product
 
 
 class Order(models.Model):
-    description = models.TextField(blank=False, null=False, max_length=250)
-    created_time = models.DateTimeField(auto_now_add=True)
+    description = models.CharField(max_length=250, blank=False, null=False)
+    created_time = models.DateTimeField(auto_now_add=True, null=False)
     completed_time = models.DateTimeField(null=True)
     deadline_time = models.DateTimeField(null=False)
     order_sum = models.PositiveIntegerField(default=0, null=False)
+    num_products = models.PositiveIntegerField(default=0, null=False)
 
     CREATED = 'CR'
     COMPLETED = 'CO'

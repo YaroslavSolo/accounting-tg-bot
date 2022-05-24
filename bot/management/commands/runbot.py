@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from aiogram.utils import executor
 
 from bot.bot_init import bot, dispatcher
-from bot.handlers import product_handlers, order_handlers, other_handlers
+from bot.handlers import product_handlers, order_handlers, statistics_handlers, other_handlers
 
 
 async def error_handler(update, error):
@@ -24,10 +24,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Telegram Bot stopped successfully'))
 
     def handle(self, *args, **options):
-        dispatcher.register_errors_handler(error_handler)
+        # dispatcher.register_errors_handler(error_handler)
+        other_handlers.register_handlers(dispatcher)
         product_handlers.register_handlers(dispatcher)
         order_handlers.register_handlers(dispatcher)
-        other_handlers.register_handlers(dispatcher)
+        statistics_handlers.register_handlers(dispatcher)
 
         executor.start_polling(
             dispatcher,

@@ -3,7 +3,6 @@ from aiogram.dispatcher import FSMContext
 
 from orders.service import *
 from bot.bot_init import bot, dispatcher
-from bot.handlers.other_handlers import MenuKeyboardStates
 from bot.keyboards.common import main_kb, build_pagination_kb
 
 
@@ -29,7 +28,7 @@ async def view_order_next(callback: types.CallbackQuery):
     global offset
     product_count = await get_active_orders_count(callback.message.chat.id)
     if offset + ORDER_LIMIT > product_count - 1:
-        await callback.answer('Просмотрены все заказы')
+        await callback.answer('Показан конец списка')
         return
 
     offset += ORDER_LIMIT
@@ -61,6 +60,5 @@ async def view_order_prev(callback: types.CallbackQuery):
 
 
 def register_handlers(dispatcher: Dispatcher):
-    dispatcher.register_message_handler(view_order, commands=['Посмотреть'], state=MenuKeyboardStates.order)
     dispatcher.register_callback_query_handler(view_order_next, text='next_order')
     dispatcher.register_callback_query_handler(view_order_prev, text='prev_order')
