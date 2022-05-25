@@ -13,21 +13,27 @@ class Order(models.Model):
     num_products = models.PositiveIntegerField(default=0, null=False)
 
     CREATED = 'CR'
-    COMPLETED = 'CO'
+    COMPLETED_IN_TIME = 'CO'
+    COMPLETED_WITH_DELAY = 'COWD'
 
     ORDER_STATUS_CHOICES = [
         (CREATED, 'CREATED'),
-        (COMPLETED, 'COMPLETED'),
+        (COMPLETED_IN_TIME, 'COMPLETED_IN_TIME'),
+        (COMPLETED_WITH_DELAY, 'COMPLETED_WITH_DELAY')
     ]
 
     ORDER_STATUS_RUS = {
         CREATED: 'создан',
-        COMPLETED: 'завершен'
+        COMPLETED_IN_TIME: 'завершен вовремя',
+        COMPLETED_WITH_DELAY: 'завершен с опозданием'
     }
 
-    status = models.CharField(max_length=2, choices=ORDER_STATUS_CHOICES, default=CREATED)
+    status = models.CharField(max_length=4, choices=ORDER_STATUS_CHOICES, default=CREATED)
 
     user_id = models.ForeignKey(to=User, on_delete=models.CASCADE, db_index=True)
+
+    def is_completed(self):
+        return self.status == Order.COMPLETED_IN_TIME or self.status == Order.COMPLETED_WITH_DELAY
 
     def get_products_str(self):
         order_products = OrderProducts.objects.filter(order=self)
@@ -39,7 +45,8 @@ class Order(models.Model):
 
     def __str__(self):
         deadline = self.deadline_time.strftime('%d.%m.%Y %H:%M')
-        return f'📃  *{self.description}*\n' \
+        return f'📃 Заказ № *{self.id}*\n' \
+               f'*{self.description}*\n' \
                f'Дедлайн: {deadline}\n' \
                f'Сумма заказа: {self.order_sum} руб.\n' \
                f'Статус: {self.ORDER_STATUS_RUS[self.status]}\n' \

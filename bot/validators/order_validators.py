@@ -30,6 +30,6 @@ async def validate_order_id(message):
     try:
         int(message.text)
     except Exception:
-        error_msg = 'Введен некорректный id заказа'
+        error_msg = 'Введен некорректный номер заказа'
 
     await raise_if_error(error_msg, message)

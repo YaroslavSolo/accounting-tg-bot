@@ -5,7 +5,7 @@ from .models import Product
 
 
 PRODUCT_LIMIT = 4
-PRODUCT_NAMES_LIMIT = 6
+PRODUCT_NAMES_LIMIT = 8
 
 
 @sync_to_async
@@ -28,10 +28,7 @@ def save_product(raw_product, user_id):
 
 @sync_to_async
 def get_product(user_id, name):
-    product_qs = Product.objects.filter(user_id=user_id, name=name)
-    if len(product_qs) == 0:
-        return None
-    return product_qs[0]
+    return Product.objects.filter(user_id=user_id, name=name).first()
 
 
 @sync_to_async
@@ -56,7 +53,7 @@ def get_product_ids_and_names(user_id):
 
 @sync_to_async
 def get_products_count(user_id):
-    return Product.objects.filter(user_id=user_id).count()
+    return User.objects.filter(telegram_id=user_id).first().products_count
 
 
 @sync_to_async

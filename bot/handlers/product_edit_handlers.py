@@ -9,7 +9,7 @@ from products.service import *
 from bot.bot_init import bot
 from bot.validators.product_validators import *
 from bot.validators.common_validators import *
-from bot.keyboards.common import main_kb, empty_inline_button, build_product_edit_kb, build_product_selection_kb
+from bot.keyboards.common import main_kb, empty_inline_button, build_product_edit_kb, build_item_selection_kb
 
 
 class ProductEditStates(StatesGroup):
@@ -32,7 +32,7 @@ async def edit_product(message: types.Message, state: FSMContext):
         await state.finish()
         return
 
-    names_kb = build_product_selection_kb(product_names)
+    names_kb = build_item_selection_kb(product_names)
 
     await message.answer('Выберите товар для изменения', parse_mode='markdown', reply_markup=names_kb)
     await state.finish()
@@ -47,7 +47,7 @@ async def edit_product_next(callback: types.CallbackQuery):
         return
 
     offset += PRODUCT_NAMES_LIMIT
-    names_kb = build_product_selection_kb(await get_product_names(callback.message.chat.id, offset))
+    names_kb = build_item_selection_kb(await get_product_names(callback.message.chat.id, offset))
 
     await callback.message.edit_reply_markup(names_kb)
     await callback.answer()
@@ -63,7 +63,7 @@ async def edit_product_prev(callback: types.CallbackQuery):
     if offset < 0:
         offset = 0
 
-    names_kb = build_product_selection_kb(await get_product_names(callback.message.chat.id, offset))
+    names_kb = build_item_selection_kb(await get_product_names(callback.message.chat.id, offset))
 
     await callback.message.edit_reply_markup(names_kb)
     await callback.answer()
@@ -89,7 +89,7 @@ async def edit_selected_product_option(callback: types.CallbackQuery, state: FSM
 
     message = ''
     if option == 'name':
-        message = 'Введите новое имя'
+        message = 'Введите новое название'
     elif option == 'description':
         message = 'Введите новое описание'
     elif option == 'price':

@@ -11,7 +11,7 @@ async def validate_name(message):
         error_msg = 'Название товара слишком длинное'
 
     if await get_product(message.chat.id, text) is not None:
-        error_msg = 'Товар с таким именем уже существует'
+        error_msg = 'Товар с таким названием уже существует'
 
     await raise_if_error(error_msg, message)
 

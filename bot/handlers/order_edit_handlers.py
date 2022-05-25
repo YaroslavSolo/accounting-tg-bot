@@ -25,7 +25,7 @@ class OrderEditStates(StatesGroup):
 
 
 async def edit_order(message: types.Message, state: FSMContext):
-    await message.answer('Введите id заказа')
+    await message.answer('Введите номер заказа')
     await state.finish()
     await OrderEditStates.select_product.set()
 
@@ -98,10 +98,16 @@ async def edit_selected_order_option_save(message: types.Message, state: FSMCont
 
 
 async def delete_selected_order(callback: types.CallbackQuery, state: FSMContext):
-    print(callback)
     await delete_order(callback.message.chat.id, int(callback.data.split(':')[1]))
     await callback.message.answer('Заказ удален', reply_markup=main_kb)
     await callback.answer('Заказ удален')
+    await state.finish()
+
+
+async def finish_selected_order(callback: types.CallbackQuery, state: FSMContext):
+    await finish_order(callback.message.chat.id, int(callback.data.split(':')[1]))
+    await callback.message.answer('Заказ завершен', reply_markup=main_kb)
+    await callback.answer('Заказ завершен')
     await state.finish()
 
 
@@ -115,6 +121,11 @@ def register_handlers(dispatcher: Dispatcher):
     dispatcher.register_callback_query_handler(
         delete_selected_order,
         cb.filter(action=['delete_order']),
+        state=OrderEditStates.select_operation
+    )
+    dispatcher.register_callback_query_handler(
+        finish_selected_order,
+        cb.filter(action=['finish']),
         state=OrderEditStates.select_operation
     )
     dispatcher.register_message_handler(edit_selected_order_option_save, state=OrderEditStates.save_changes)

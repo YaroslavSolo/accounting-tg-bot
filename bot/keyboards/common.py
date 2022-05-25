@@ -2,11 +2,6 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.utils.callback_data import CallbackData
 
 
-start_button = KeyboardButton('/Начать работу')
-start_kb = ReplyKeyboardMarkup(resize_keyboard=True)
-start_kb.add(start_button)
-
-
 view_button = KeyboardButton(text='Посмотреть')
 add_button = KeyboardButton('Добавить')
 edit_button = KeyboardButton('Изменить')
@@ -16,9 +11,10 @@ menu_kb.row(view_button, add_button, edit_button)
 
 product_button = KeyboardButton('Товары')
 order_button = KeyboardButton('Заказы')
+material_button = KeyboardButton('Материалы')
 statistics_button = KeyboardButton('Статистика продаж')
-main_kb = ReplyKeyboardMarkup(resize_keyboard=True)
-main_kb.row(product_button, order_button)
+main_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+main_kb.row(product_button, order_button, material_button)
 main_kb.row(statistics_button)
 
 
@@ -41,21 +37,21 @@ def build_pagination_kb(callback_data):
     return pagination_kb
 
 
-def build_product_selection_kb(product_names):
+def build_item_selection_kb(item_names):
     cb = CallbackData('stub', 'name', 'action')
 
-    product_name_buttons = map(
+    item_name_buttons = map(
         lambda name: InlineKeyboardButton(text=name, callback_data=cb.new(name=name, action='edit')),
-        product_names
+        item_names
     )
     previous_button = InlineKeyboardButton(text='⬅️', callback_data=cb.new(name='', action='prev'))
     next_button = InlineKeyboardButton(text='➡️', callback_data=cb.new(name='', action='next'))
 
-    names_kb = InlineKeyboardMarkup(row_width=1)
-    names_kb.add(*product_name_buttons)
-    names_kb.row(previous_button, empty_inline_button, next_button)
+    selection_kb = InlineKeyboardMarkup(row_width=1)
+    selection_kb.add(*item_name_buttons)
+    selection_kb.row(previous_button, empty_inline_button, next_button)
 
-    return names_kb
+    return selection_kb
 
 
 def build_product_edit_kb(product_name):
@@ -113,6 +109,10 @@ def build_order_edit_kb(order_id):
         text='Время дедлайна',
         callback_data=cb.new(id=order_id, action='deadline_time')
     )
+    finish_button = InlineKeyboardButton(
+        text='Завершить ✅',
+        callback_data=cb.new(id=order_id, action='finish')
+    )
     delete_button = InlineKeyboardButton(
         text='Удалить ❌',
         callback_data=cb.new(id=order_id, action='delete_order')
@@ -122,6 +122,37 @@ def build_order_edit_kb(order_id):
         description_button,
         deadline_date_button,
         deadline_time_button,
+        finish_button,
+        delete_button
+    )
+
+    return edit_kb
+
+
+def build_material_edit_kb(material_name):
+    cb = CallbackData('stub', 'id', 'action')
+
+    name_button = InlineKeyboardButton(
+        text='Название',
+        callback_data=cb.new(id=material_name, action='name')
+    )
+    price_button = InlineKeyboardButton(
+        text='Цена',
+        callback_data=cb.new(id=material_name, action='price')
+    )
+    amount_button = InlineKeyboardButton(
+        text='Количество',
+        callback_data=cb.new(id=material_name, action='amount')
+    )
+    delete_button = InlineKeyboardButton(
+        text='Удалить ❌',
+        callback_data=cb.new(id=material_name, action='delete_material')
+    )
+
+    edit_kb = InlineKeyboardMarkup(row_width=1).add(
+        name_button,
+        price_button,
+        amount_button,
         delete_button
     )
 

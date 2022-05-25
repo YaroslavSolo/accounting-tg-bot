@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from aiogram.utils import executor
 
 from bot.bot_init import bot, dispatcher
-from bot.handlers import product_handlers, order_handlers, statistics_handlers, other_handlers
+from bot.handlers import product_handlers, order_handlers, material_handlers, statistics_handlers, other_handlers
 
 
 async def error_handler(update, error):
@@ -28,6 +28,7 @@ class Command(BaseCommand):
         other_handlers.register_handlers(dispatcher)
         product_handlers.register_handlers(dispatcher)
         order_handlers.register_handlers(dispatcher)
+        material_handlers.register_handlers(dispatcher)
         statistics_handlers.register_handlers(dispatcher)
 
         executor.start_polling(

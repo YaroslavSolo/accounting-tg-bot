@@ -20,7 +20,7 @@ class AddProductStates(StatesGroup):
 async def add_product(message: types.Message, state: FSMContext):
     await state.finish()
     await AddProductStates.name.set()
-    await message.answer('Введите имя товара', reply_markup=ReplyKeyboardRemove())
+    await message.answer('Введите название товара', reply_markup=ReplyKeyboardRemove())
 
 
 async def add_product_name(message: types.Message, state: FSMContext):

@@ -1,3 +1,5 @@
+import datetime
+
 from asgiref.sync import sync_to_async
 from django.db import transaction
 from .models import Order, OrderProducts
@@ -83,6 +85,19 @@ def save_order_products(order, product, amount):
     order.save()
     order_products = OrderProducts(order=order, product=product, amount=amount)
     order_products.save()
+
+
+@sync_to_async
+def finish_order(user_id, order_id):
+    order = Order.objects.filter(id=order_id, user_id=user_id).first()
+    if order is not None and not order.is_completed():
+        order.completed_time = datetime.datetime.now()
+        if order.deadline_time >= order.completed_time:
+            order.status = Order.COMPLETED_IN_TIME
+        else:
+            order.status = Order.COMPLETED_WITH_DELAY
+
+        order.save()
 
 
 @sync_to_async

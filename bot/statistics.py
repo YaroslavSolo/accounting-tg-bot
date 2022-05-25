@@ -44,6 +44,7 @@ def plot_revenue_trend(filepath, orders_df, partition_type):
     x = grouped_orders.index
     y = grouped_orders[:]
 
+    plt.grid()
     plt.plot(x, y)
     plt.savefig(filepath)
     plt.clf()
@@ -65,6 +66,7 @@ def plot_num_orders_trend(filepath, orders_df, partition_type):
     x = grouped_orders.index
     y = grouped_orders[:]
 
+    plt.grid()
     plt.plot(x, y)
     plt.savefig(filepath)
     plt.clf()
@@ -88,6 +90,7 @@ def plot_avg_order_sum_trend(filepath, orders_df, partition_type):
         else:
             y[i] = 0
 
+    plt.grid()
     plt.plot(x, y)
     plt.savefig(filepath)
     plt.clf()
@@ -100,10 +103,11 @@ def plot_product_popularity_trend(filepath, products, order_products):
         count_by_products[entry['product']] += entry['amount']
 
     plt.ioff()
+    plt.grid(axis='y')
     plt.ylabel('количество товаров, шт.', fontsize=12)
     plt.title('Количество проданных товаров по наименованию')
 
     product_names = [entry[1] for entry in products]
-    plt.bar(product_names, count_by_products.values())
+    plt.bar(product_names, count_by_products.values(), color=plt.get_cmap('tab20c').colors)
     plt.savefig(filepath)
     plt.clf()

@@ -1,5 +1,7 @@
 from django.db import models
+
 from tgusers.models import User
+from materials.models import Material
 
 
 class Product(models.Model):
@@ -12,7 +14,7 @@ class Product(models.Model):
     user_id = models.ForeignKey(to=User, on_delete=models.CASCADE, db_index=True)
 
     def __str__(self):
-        return f'📦  *{self.name}*\n' \
+        return f'📦 *{self.name}*\n' \
                f'{self.description}\n' \
                f'Цена: {self.price} руб.\n' \
                f'Время изготовления: {self.production_time} (дни)\n' \
@@ -22,3 +24,12 @@ class Product(models.Model):
         indexes = [
             models.Index(fields=['user_id', 'name']),
         ]
+
+
+class ProductMaterials(models.Model):
+    product = models.ForeignKey(to=Product, on_delete=models.CASCADE, db_index=True)
+    material = models.ForeignKey(to=Material, on_delete=models.CASCADE)
+    amount = models.PositiveIntegerField(null=False)
+
+    def __str__(self):
+        return f'📦  *{self.material.name}* - {self.amount}x'

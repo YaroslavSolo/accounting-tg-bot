@@ -3,7 +3,6 @@ import os
 
 from aiogram import types, Dispatcher
 from aiogram.types import InputFile
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 
 from bot.bot_init import bot
@@ -37,7 +36,7 @@ async def statistics_period_end(message: types.Message, state: FSMContext):
     await MenuKeyboardStates.next()
 
 
-async def statistics_select_slice(callback: types.CallbackQuery, state: FSMContext):
+async def statistics_select_partition(callback: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as order:
         period_end = order['period_end']
         period_start = order['period_start']
@@ -55,10 +54,10 @@ async def statistics_select_slice(callback: types.CallbackQuery, state: FSMConte
 
     chat_id = callback.message.chat.id
     graph_filenames = [
-        'pictures_tmp/graph1.png',
-        'pictures_tmp/graph2.png',
-        'pictures_tmp/graph3.png',
-        'pictures_tmp/graph4.png',
+        f'pictures_tmp/graph1_{chat_id}.png',
+        f'pictures_tmp/graph2_{chat_id}.png',
+        f'pictures_tmp/graph3_{chat_id}.png',
+        f'pictures_tmp/graph4_{chat_id}.png',
     ]
 
     plot_revenue_trend(graph_filenames[0], order_data, callback.data)
@@ -73,13 +72,19 @@ async def statistics_select_slice(callback: types.CallbackQuery, state: FSMConte
     media = types.MediaGroup()
     for filename in graph_filenames:
         media.attach_photo(InputFile(filename))
-        # os.remove(filepath)
 
     await bot.send_media_group(chat_id, media=media)
+
+    for filename in graph_filenames:
+        os.remove(filename)
+
     await state.finish()
 
 
 def register_handlers(dispatcher: Dispatcher):
     dispatcher.register_message_handler(statistics_period_start, state=MenuKeyboardStates.statistics_period_start)
     dispatcher.register_message_handler(statistics_period_end, state=MenuKeyboardStates.statistics_period_end)
-    dispatcher.register_callback_query_handler(statistics_select_slice, state=MenuKeyboardStates.statistics_select_slice)
+    dispatcher.register_callback_query_handler(
+        statistics_select_partition,
+        state=MenuKeyboardStates.statistics_select_partition
+    )
