@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 
 from orders.service import *
 from bot.bot_init import bot, dispatcher
-from bot.keyboards.common import main_kb, build_pagination_kb
+from bot.keyboards import main_kb, build_pagination_kb
 
 
 offset = 0

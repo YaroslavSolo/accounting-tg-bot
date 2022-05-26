@@ -9,7 +9,7 @@ from materials.service import *
 from bot.bot_init import bot
 from bot.validators.material_validators import *
 from bot.validators.common_validators import *
-from bot.keyboards.common import main_kb, empty_inline_button, build_material_edit_kb, build_item_selection_kb
+from bot.keyboards import main_kb, empty_inline_button, build_material_edit_kb, build_item_selection_kb
 
 
 class MaterialEditStates(StatesGroup):
@@ -70,9 +70,14 @@ async def edit_material_prev(callback: types.CallbackQuery):
 
 
 async def edit_selected_material_menu(callback: types.CallbackQuery):
+    await callback.message.delete()
     material_name = callback.data.split(':')[1]
     await callback.message.answer(
-        f'*{material_name}*',
+        await get_material_str(callback.message.chat.id, material_name),
+        parse_mode='markdown'
+    )
+    await callback.message.answer(
+        'Выберите поле для изменения',
         parse_mode='markdown',
         reply_markup=build_material_edit_kb(material_name)
     )
@@ -81,6 +86,7 @@ async def edit_selected_material_menu(callback: types.CallbackQuery):
 
 
 async def edit_selected_material_option(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
     material_name = callback.data.split(':')[1]
     option = callback.data.split(':')[2]
     async with state.proxy() as data:
@@ -123,6 +129,7 @@ async def edit_selected_material_option_save(message: types.Message, state: FSMC
 
 
 async def delete_selected_material(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
     await delete_material(callback.message.chat.id, callback.data.split(':')[1])
     await callback.message.answer('Материал удален', reply_markup=main_kb)
     await callback.answer('Материал удален')

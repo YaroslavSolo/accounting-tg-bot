@@ -6,7 +6,7 @@ from aiogram.types import ReplyKeyboardRemove
 from products.service import *
 from bot.validators.product_validators import *
 from bot.validators.common_validators import *
-from bot.keyboards.common import main_kb
+from bot.keyboards import main_kb
 
 
 class AddProductStates(StatesGroup):

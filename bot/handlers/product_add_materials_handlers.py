@@ -8,7 +8,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove, InlineKeyboardButton
 
 
-from orders.service import *
+from materials.service import *
 from products.service import *
 from bot.validators.order_validators import *
 from bot.validators.common_validators import *
@@ -27,30 +27,7 @@ class AddOrderStates(StatesGroup):
     finish = State()
 
 
-async def add_order(message: types.Message, state: FSMContext):
-    await state.finish()
-    await AddOrderStates.description.set()
-    await message.answer('Введите описание заказа', reply_markup=ReplyKeyboardRemove())
-
-
-async def add_order_description(message: types.Message, state: FSMContext):
-    await validate_description(message)
-    async with state.proxy() as order:
-        order['description'] = message.text
-    await AddOrderStates.next()
-    await message.answer('Введите дату завершения заказа (дедлайн) в формате дд.мм.гггг')
-
-
-async def add_order_deadline_date(message: types.Message, state: FSMContext):
-    await validate_date(message)
-    async with state.proxy() as order:
-        deadline = datetime.datetime.strptime(message.text, '%d.%m.%Y')
-        order['deadline_date'] = deadline
-    await AddOrderStates.next()
-    await message.answer('Введите время завершения заказа в формате чч:мм')
-
-
-async def add_order_deadline_time(message: types.Message, state: FSMContext):
+async def add_materials(message: types.Message, state: FSMContext):
     await validate_deadline_time(message)
     async with state.proxy() as order:
         deadline = datetime.datetime.strptime(message.text, '%H:%M')

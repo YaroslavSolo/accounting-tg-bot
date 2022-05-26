@@ -59,4 +59,4 @@ class OrderProducts(models.Model):
     amount = models.PositiveIntegerField(null=False)
 
     def __str__(self):
-        return f'📦  *{self.product.name}* - {self.amount}x'
+        return f'📦 *{self.product.name}* - {self.amount}x'

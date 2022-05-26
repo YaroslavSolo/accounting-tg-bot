@@ -12,7 +12,7 @@ from products.service import *
 from bot.bot_init import bot
 from bot.validators.order_validators import *
 from bot.validators.common_validators import *
-from bot.keyboards.common import main_kb, build_order_edit_kb
+from bot.keyboards import main_kb, build_order_edit_kb
 
 
 cb = CallbackData('stub', 'id', 'action')
@@ -34,8 +34,9 @@ async def edit_selected_order_menu(message: types.Message):
     await validate_order_id(message)
     order_id = int(message.text)
     if await get_order(message.chat.id, order_id) is not None:
+        await message.answer(await get_order_str(message.chat.id, order_id), parse_mode='markdown')
         await message.answer(
-            await get_order_str(message.chat.id, order_id) + '\nВыберите поле для изменения',
+            '\nВыберите поле для изменения',
             parse_mode='markdown',
             reply_markup=build_order_edit_kb(order_id)
         )
@@ -45,6 +46,7 @@ async def edit_selected_order_menu(message: types.Message):
 
 
 async def edit_selected_order_option(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
     order_id = callback.data.split(':')[1]
     option = callback.data.split(':')[2]
     async with state.proxy() as data:
@@ -98,6 +100,7 @@ async def edit_selected_order_option_save(message: types.Message, state: FSMCont
 
 
 async def delete_selected_order(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
     await delete_order(callback.message.chat.id, int(callback.data.split(':')[1]))
     await callback.message.answer('Заказ удален', reply_markup=main_kb)
     await callback.answer('Заказ удален')
@@ -105,6 +108,7 @@ async def delete_selected_order(callback: types.CallbackQuery, state: FSMContext
 
 
 async def finish_selected_order(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
     await finish_order(callback.message.chat.id, int(callback.data.split(':')[1]))
     await callback.message.answer('Заказ завершен', reply_markup=main_kb)
     await callback.answer('Заказ завершен')

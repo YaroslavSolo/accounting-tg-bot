@@ -9,7 +9,7 @@ from bot.bot_init import bot
 from bot.statistics import *
 from bot.handlers.other_handlers import MenuKeyboardStates
 from bot.validators.common_validators import *
-from bot.keyboards.common import partition_type_kb, main_kb
+from bot.keyboards import partition_type_kb, main_kb
 
 
 async def statistics_period_start(message: types.Message, state: FSMContext):

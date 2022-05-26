@@ -6,7 +6,7 @@ from aiogram.types import ReplyKeyboardRemove
 from materials.service import *
 from bot.validators.common_validators import *
 from bot.validators.material_validators import *
-from bot.keyboards.common import main_kb
+from bot.keyboards import main_kb
 
 
 class AddMaterialStates(StatesGroup):
@@ -43,7 +43,7 @@ async def add_material_amount(message: types.Message, state: FSMContext):
         product['amount'] = int(message.text)
         await save_material(product, message.chat.id)
     await state.finish()
-    await message.answer('Информация о материале добавлена', reply_markup=main_kb)
+    await message.answer('Новый материал сохранен', reply_markup=main_kb)
 
 
 def register_handlers(dispatcher: Dispatcher):

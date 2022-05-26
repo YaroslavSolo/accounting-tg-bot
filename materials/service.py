@@ -30,6 +30,11 @@ def get_material(user_id, name):
 
 
 @sync_to_async
+def get_material_str(user_id, name):
+    return str(Material.objects.filter(user_id=user_id, name=name).first())
+
+
+@sync_to_async
 def get_materials_str(user_id, offset, limit=MATERIAL_LIMIT):
     result = ''
     materials = Material.objects.filter(user_id=user_id).order_by('name')[offset:offset + limit]

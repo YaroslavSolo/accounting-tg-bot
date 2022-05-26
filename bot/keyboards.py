@@ -77,6 +77,14 @@ def build_product_edit_kb(product_name):
         text='Количество',
         callback_data=cb.new(id=product_name, action='amount')
     )
+    materials_button = InlineKeyboardButton(
+        text='Указать маретиалы',
+        callback_data=cb.new(id=product_name, action='add_materials')
+    )
+    clear_materials_button = InlineKeyboardButton(
+        text='Очистить список материалов 🧹',
+        callback_data=cb.new(id=product_name, action='clear')
+    )
     delete_button = InlineKeyboardButton(
         text='Удалить ❌',
         callback_data=cb.new(id=product_name, action='delete_product')
@@ -88,6 +96,8 @@ def build_product_edit_kb(product_name):
         price_button,
         production_time_button,
         amount_button,
+        materials_button,
+        clear_materials_button,
         delete_button
     )
 

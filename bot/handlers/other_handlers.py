@@ -7,7 +7,7 @@ from orders.service import *
 from products.service import *
 from materials.service import *
 from tgusers.models import User
-from bot.keyboards.common import main_kb, menu_kb
+from bot.keyboards import main_kb, menu_kb
 
 
 class MenuKeyboardStates(StatesGroup):
