@@ -9,10 +9,10 @@ menu_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 menu_kb.row(view_button, add_button, edit_button)
 
 
-product_button = KeyboardButton('Товары')
-order_button = KeyboardButton('Заказы')
-material_button = KeyboardButton('Материалы')
-statistics_button = KeyboardButton('Статистика продаж')
+product_button = KeyboardButton('📦 Товары')
+order_button = KeyboardButton('📃 Заказы')
+material_button = KeyboardButton('🧱 Материалы')
+statistics_button = KeyboardButton('📊 Статистика продаж')
 main_kb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 main_kb.row(product_button, order_button, material_button)
 main_kb.row(statistics_button)
@@ -41,7 +41,7 @@ def build_item_selection_kb(item_names):
     cb = CallbackData('stub', 'name', 'action')
 
     item_name_buttons = map(
-        lambda name: InlineKeyboardButton(text=name, callback_data=cb.new(name=name, action='edit')),
+        lambda name: InlineKeyboardButton(text=name, callback_data=cb.new(name=name, action='e')),
         item_names
     )
     previous_button = InlineKeyboardButton(text='⬅️', callback_data=cb.new(name='', action='prev'))
@@ -82,15 +82,15 @@ def build_product_edit_kb(product_name):
         callback_data=cb.new(id=product_name, action='add_materials')
     )
     clear_materials_button = InlineKeyboardButton(
-        text='Очистить список материалов 🧹',
+        text='🧹 Очистить материалы',
         callback_data=cb.new(id=product_name, action='clear')
     )
     delete_button = InlineKeyboardButton(
-        text='Удалить ❌',
+        text='❌ Удалить',
         callback_data=cb.new(id=product_name, action='delete_product')
     )
 
-    edit_kb = InlineKeyboardMarkup(row_width=1).add(
+    edit_kb = InlineKeyboardMarkup(row_width=2).add(
         name_button,
         description_button,
         price_button,
@@ -120,21 +120,26 @@ def build_order_edit_kb(order_id):
         callback_data=cb.new(id=order_id, action='deadline_time')
     )
     finish_button = InlineKeyboardButton(
-        text='Завершить ✅',
+        text='✅ Завершить',
         callback_data=cb.new(id=order_id, action='finish')
     )
+    cancel_button = InlineKeyboardButton(
+        text='🚫 Отменить',
+        callback_data=cb.new(id=order_id, action='cancel')
+    )
     delete_button = InlineKeyboardButton(
-        text='Удалить ❌',
+        text='❌ Удалить',
         callback_data=cb.new(id=order_id, action='delete_order')
     )
 
     edit_kb = InlineKeyboardMarkup(row_width=1).add(
         description_button,
         deadline_date_button,
-        deadline_time_button,
-        finish_button,
-        delete_button
+        deadline_time_button
     )
+
+    edit_kb.row(finish_button, cancel_button)
+    edit_kb.row(delete_button)
 
     return edit_kb
 
@@ -155,11 +160,11 @@ def build_material_edit_kb(material_name):
         callback_data=cb.new(id=material_name, action='amount')
     )
     delete_button = InlineKeyboardButton(
-        text='Удалить ❌',
+        text='❌ Удалить',
         callback_data=cb.new(id=material_name, action='delete_material')
     )
 
-    edit_kb = InlineKeyboardMarkup(row_width=1).add(
+    edit_kb = InlineKeyboardMarkup(row_width=3).add(
         name_button,
         price_button,
         amount_button,

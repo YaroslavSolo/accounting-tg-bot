@@ -69,6 +69,16 @@ async def info(message: types.Message):
     await message.answer('Здесь будет инструкция по использованию бота')
 
 
+async def enable_notifications(message: types.Message):
+    User.objects.filter(telegram_id=message.chat.id).update(notifications_enabled=True)
+    await message.answer('Уведомления включены')
+
+
+async def disable_notifications(message: types.Message):
+    User.objects.filter(telegram_id=message.chat.id).update(notifications_enabled=False)
+    await message.answer('Уведомления выключены')
+
+
 async def clear_products_handler(message: types.Message):
     await clear_products(message.chat.id)
     await message.answer('Все товары были удалены')
@@ -86,24 +96,26 @@ async def clear_materials_handler(message: types.Message):
 
 async def main_kb_handler(message: types.Message):
     text = message.text
-    if text == 'Товары':
+    if text == '📦 Товары':
         await product_menu(message)
-    elif text == 'Заказы':
+    elif text == '📃 Заказы':
         await order_menu(message)
-    elif text == 'Материалы':
+    elif text == '🧱 Материалы':
         await material_menu(message)
-    elif text == 'Статистика продаж':
+    elif text == '📊 Статистика продаж':
         await statistics_menu(message)
 
 
 def register_handlers(dispatcher: Dispatcher):
-    dispatcher.register_message_handler(start, commands=['start', 's'], state='*')
+    dispatcher.register_message_handler(start, commands=['start'], state='*')
     dispatcher.register_message_handler(menu, commands=['menu'], state='*')
     dispatcher.register_message_handler(product_menu, commands=['Товары'])
     dispatcher.register_message_handler(order_menu, commands=['Заказы'])
     dispatcher.register_message_handler(material_menu, commands=['Материалы'])
     dispatcher.register_message_handler(statistics_menu, commands=['Статистика продаж'])
     dispatcher.register_message_handler(info, commands=['info'])
+    dispatcher.register_message_handler(enable_notifications, commands=['enablenotifications'])
+    dispatcher.register_message_handler(disable_notifications, commands=['disablenotifications'])
     dispatcher.register_message_handler(clear_products_handler, commands=['clearproducts'])
     dispatcher.register_message_handler(clear_orders_handler, commands=['clearorders'])
     dispatcher.register_message_handler(clear_materials_handler, commands=['clearmaterials'])

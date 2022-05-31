@@ -9,7 +9,7 @@ class Product(models.Model):
     description = models.CharField(max_length=250, blank=True, null=False)
     price = models.PositiveIntegerField(default=0)  # in rubles
     production_time = models.PositiveIntegerField(default=0)  # in days
-    amount = models.PositiveIntegerField(default=0, null=False)
+    amount = models.IntegerField(default=0, null=False)
 
     user_id = models.ForeignKey(to=User, on_delete=models.CASCADE, db_index=True)
 
@@ -21,12 +21,16 @@ class Product(models.Model):
 
         return result
 
+    def __hash__(self):
+        return hash(self.id)
+
     def __str__(self):
+        product_count_str = f'0 ({-self.amount} необходимо изготовить)' if self.amount < 0 else f'{self.amount}'
         return f'📦 *{self.name}*\n' \
                f'{self.description}\n' \
                f'Цена: {self.price} руб.\n' \
                f'Время изготовления: {self.production_time} (дни)\n' \
-               f'Количество товара: {self.amount}\n' \
+               f'Количество товара: {product_count_str}\n' \
                f'{self.get_materials_str()}'
 
     class Meta:

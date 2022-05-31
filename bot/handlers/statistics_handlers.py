@@ -43,16 +43,25 @@ async def statistics_select_partition(callback: types.CallbackQuery, state: FSMC
 
     period_start_str = period_start.strftime('%d.%m.%Y')
     period_end_str = period_end.strftime('%d.%m.%Y')
-    order_data = await prepare_order_data(callback.message.chat.id, period_start, period_end)
+    chat_id = callback.message.chat.id
+    order_data = await prepare_order_data(chat_id, period_start, period_end)
+
+    if order_data.shape[0] == 0:
+        await callback.message.answer(
+            f'❗️ Нет выполненных заказов за указанный период\n*{period_start_str}* - *{period_end_str}*',
+            parse_mode='markdown'
+        )
+        await state.finish()
+        return
 
     await callback.message.answer(
-        f'📊 Статистика за период *{period_start_str}* - *{period_end_str}*\n\n'
+        f'📊 Статистика за период\n*{period_start_str}* - *{period_end_str}*\n\n'
+        f'📃 Принято заказов: *{await get_created_orders_count(chat_id, period_start, period_end)}*\n'
         f'{get_overall_stats(order_data)}',
         parse_mode='markdown',
         reply_markup=main_kb
     )
 
-    chat_id = callback.message.chat.id
     graph_filenames = [
         f'pictures_tmp/graph1_{chat_id}.png',
         f'pictures_tmp/graph2_{chat_id}.png',

@@ -62,7 +62,7 @@ async def add_order_deadline_time(message: types.Message, state: FSMContext):
     global offset
     offset = 0
     await AddOrderStates.next()
-    products_list_kb = build_item_selection_kb(await get_product_names(message.chat.id, offset))
+    products_list_kb = build_item_selection_kb(await get_product_names_and_ids(message.chat.id, offset))
     products_list_kb.row(InlineKeyboardButton(text='Завершить', callback_data=cb.new(name='', action='finish')))
     await message.answer('Выберите товары в заказ', reply_markup=products_list_kb)
 
@@ -75,7 +75,7 @@ async def product_list_next(callback: types.CallbackQuery):
         return
 
     offset += PRODUCT_NAMES_LIMIT
-    names_kb = build_item_selection_kb(await get_product_names(callback.message.chat.id, offset))
+    names_kb = build_item_selection_kb(await get_product_names_and_ids(callback.message.chat.id, offset))
     names_kb.row(InlineKeyboardButton(text='Завершить', callback_data=cb.new(name='', action='finish')))
 
     await callback.message.edit_reply_markup(names_kb)
@@ -92,7 +92,7 @@ async def product_list_prev(callback: types.CallbackQuery):
     if offset < 0:
         offset = 0
 
-    names_kb = build_item_selection_kb(await get_product_names(callback.message.chat.id, offset))
+    names_kb = build_item_selection_kb(await get_product_names_and_ids(callback.message.chat.id, offset))
     names_kb.row(InlineKeyboardButton(text='Завершить', callback_data=cb.new(name='', action='finish')))
 
     await callback.message.edit_reply_markup(names_kb)
@@ -118,7 +118,7 @@ async def add_order_product_amount(message: types.Message, state: FSMContext):
     await save_order_products(order, product, int(message.text))
     global offset
     offset = 0
-    names_kb = build_item_selection_kb(await get_product_names(message.chat.id, offset))
+    names_kb = build_item_selection_kb(await get_product_names_and_ids(message.chat.id, offset))
     names_kb.row(InlineKeyboardButton(text='Завершить', callback_data=cb.new(name='', action='finish')))
     await message.answer('Товар добавлен в заказ')
     await message.answer('Выберите товары в заказ', reply_markup=names_kb)
@@ -138,6 +138,28 @@ async def add_order_finish(callback: types.CallbackQuery, state: FSMContext):
     )
     await callback.answer()
 
+    insufficient_products = await get_insufficient_products(order)
+    if insufficient_products:
+        res = ''
+        for product in insufficient_products:
+            res += f'*{product.name}* - {insufficient_products[product]}x\n'
+        await callback.message.answer(
+            'Товары, которых не хватает в запасе для выполнения заказа:\n' + res,
+            parse_mode='markdown',
+            reply_markup=main_kb
+        )
+
+    insufficient_materials = await get_insufficient_materials(order, insufficient_products)
+    if insufficient_materials:
+        res = ''
+        for entry in insufficient_materials:
+            res += f'*{entry[0]}* - {entry[1]}x\n'
+        await callback.message.answer(
+            'Материалы, которые необходимо докупить для производства товаров:\n' + res,
+            parse_mode='markdown',
+            reply_markup=main_kb
+        )
+
 
 def register_handlers(dispatcher: Dispatcher):
     dispatcher.register_message_handler(add_order_description, state=AddOrderStates.description)
@@ -151,7 +173,7 @@ def register_handlers(dispatcher: Dispatcher):
     )
     dispatcher.register_callback_query_handler(
         add_order_products_list,
-        cb.filter(action=['edit']),
+        cb.filter(action=['e']),
         state=AddOrderStates.product
     )
     dispatcher.register_callback_query_handler(

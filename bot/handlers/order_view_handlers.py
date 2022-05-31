@@ -14,11 +14,11 @@ async def view_order(message: types.Message, state: FSMContext):
     offset = 0
     await state.finish()
     await message.answer(
-        f'Всего активных заказов: {await get_active_orders_count(message.chat.id)}',
+        f'Всего активных заказов: {await get_orders_count(message.chat.id)}',
         reply_markup=main_kb
     )
     await message.answer(
-        await get_active_orders_str(message.chat.id, 0),
+        await get_orders_str(message.chat.id, 0),
         parse_mode='markdown',
         reply_markup=build_pagination_kb('order')
     )
@@ -26,14 +26,14 @@ async def view_order(message: types.Message, state: FSMContext):
 
 async def view_order_next(callback: types.CallbackQuery):
     global offset
-    product_count = await get_active_orders_count(callback.message.chat.id)
+    product_count = await get_orders_count(callback.message.chat.id)
     if offset + ORDER_LIMIT > product_count - 1:
         await callback.answer('Показан конец списка')
         return
 
     offset += ORDER_LIMIT
 
-    await bot.edit_message_text(await get_active_orders_str(callback.message.chat.id, offset),
+    await bot.edit_message_text(await get_orders_str(callback.message.chat.id, offset),
                                 callback.message.chat.id,
                                 callback.message.message_id,
                                 parse_mode='markdown',
@@ -51,7 +51,7 @@ async def view_order_prev(callback: types.CallbackQuery):
     if offset < 0:
         offset = 0
 
-    await bot.edit_message_text(await get_active_orders_str(callback.message.chat.id, offset),
+    await bot.edit_message_text(await get_orders_str(callback.message.chat.id, offset),
                                 callback.message.chat.id,
                                 callback.message.message_id,
                                 parse_mode='markdown',

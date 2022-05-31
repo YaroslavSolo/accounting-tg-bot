@@ -1,11 +1,14 @@
 from asgiref.sync import sync_to_async
 
+import matplotlib
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pandas as pd
 from pandas import DataFrame as df
 
+from orders.models import Order
 from orders.service import *
 from products.service import *
 
@@ -13,30 +16,45 @@ from products.service import *
 TITLE_BY_PARTITION_TYPE = {'D': 'дням', 'W-MON': 'неделям', 'M': 'месяцам'}
 
 
+matplotlib.rcParams['figure.figsize'] = (9, 7)
+
+
 async def prepare_order_data(user_id, period_start, period_end):
     orders = await get_completed_orders_between(user_id, period_start, period_end)
-    values = orders.values('id', 'deadline_time', 'completed_time', 'order_sum', 'num_products')
+    values = orders.values('id', 'completed_time', 'order_sum', 'num_products', 'status')
     orders_df = await sync_to_async(lambda v: df.from_records(v))(values)
     # print(orders_df)
     return orders_df
 
 
-def get_overall_stats(orders_df):
+def get_overall_stats(orders_df: pd.DataFrame):
     total_products = orders_df['num_products'].sum()
     total_revenue = orders_df['order_sum'].sum()
-    total_orders = orders_df.shape[0]
-    avg_order_sum = total_revenue / total_orders
-    return f'📄 Принято заказов: *{total_orders}*\n' \
+    in_time_orders = sum(orders_df['status'] == Order.COMPLETED_IN_TIME)
+    delayed_orders = sum(orders_df['status'] == Order.COMPLETED_WITH_DELAY)
+    finished_orders = in_time_orders + delayed_orders
+    if finished_orders != 0:
+        avg_order_sum = total_revenue / finished_orders
+    else:
+        avg_order_sum = 0
+
+    if finished_orders != 0:
+        orders_str = f'{in_time_orders}/{finished_orders} ({round(in_time_orders / finished_orders * 100)}%)'
+    else:
+        orders_str = f'0/0 (0%)'
+
+    return f'⏱ Заказов выполнено вовремя: {orders_str}\n' \
            f'📦 Продано товаров: *{total_products}*\n' \
            f'💰 Суммарная выручка: *{total_revenue}* руб.\n' \
            f'📈 Средняя сумма заказа: *{round(avg_order_sum, 2)}* руб.'
 
 
 def plot_revenue_trend(filepath, orders_df, partition_type):
-    orders_df = orders_df.loc[:, ['deadline_time', 'order_sum']]
-    grouped_orders = orders_df.groupby(pd.Grouper(key='deadline_time', freq=partition_type)).sum()
+    orders_df = orders_df.loc[:, ['completed_time', 'order_sum']]
+    grouped_orders = orders_df.groupby(pd.Grouper(key='completed_time', freq=partition_type)).sum()
 
     plt.ioff()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.title('Выручка по ' + TITLE_BY_PARTITION_TYPE[partition_type])
     plt.ylabel('выручка, руб.', fontsize=12)
     plt.xticks(rotation=30, ha="right")
@@ -51,13 +69,14 @@ def plot_revenue_trend(filepath, orders_df, partition_type):
 
 
 def plot_num_orders_trend(filepath, orders_df, partition_type):
-    orders_df = orders_df.loc[:, ['deadline_time']]
+    orders_df = orders_df.loc[:, ['completed_time']]
     orders_df['num_orders'] = np.ones(orders_df.shape[0], dtype=int)
-    grouped_orders = orders_df.groupby(pd.Grouper(key='deadline_time', freq=partition_type)).sum()
+    grouped_orders = orders_df.groupby(pd.Grouper(key='completed_time', freq=partition_type)).sum()
 
     plt.ioff()
     ax = plt.figure().gca()
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 
     plt.title('Количество заказов по ' + TITLE_BY_PARTITION_TYPE[partition_type])
     plt.ylabel('количество заказов, шт.', fontsize=12)
@@ -73,11 +92,12 @@ def plot_num_orders_trend(filepath, orders_df, partition_type):
 
 
 def plot_avg_order_sum_trend(filepath, orders_df, partition_type):
-    orders_df = orders_df.loc[:, ['deadline_time', 'order_sum']]
+    orders_df = orders_df.loc[:, ['completed_time', 'order_sum']]
     orders_df['num_orders'] = np.ones(orders_df.shape[0])
-    grouped_orders = orders_df.groupby(pd.Grouper(key='deadline_time', freq=partition_type)).sum()
+    grouped_orders = orders_df.groupby(pd.Grouper(key='completed_time', freq=partition_type)).sum()
 
     plt.ioff()
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.title('Средняя сумма заказа по ' + TITLE_BY_PARTITION_TYPE[partition_type])
     plt.ylabel('сумма, руб.', fontsize=12)
     plt.xticks(rotation=30, ha="right")

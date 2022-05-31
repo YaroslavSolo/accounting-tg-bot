@@ -77,7 +77,7 @@ async def edit_selected_material_menu(callback: types.CallbackQuery):
         parse_mode='markdown'
     )
     await callback.message.answer(
-        'Выберите поле для изменения',
+        'Выберите параметр для изменения',
         parse_mode='markdown',
         reply_markup=build_material_edit_kb(material_name)
     )
@@ -149,7 +149,7 @@ def register_handlers(dispatcher: Dispatcher):
     )
     dispatcher.register_callback_query_handler(
         edit_selected_material_menu,
-        cb.filter(action=['edit']),
+        cb.filter(action=['e']),
         state=MaterialEditStates.select_material
     )
     dispatcher.register_callback_query_handler(

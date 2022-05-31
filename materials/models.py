@@ -3,7 +3,7 @@ from tgusers.models import User
 
 
 class Material(models.Model):
-    name = models.CharField(max_length=64, blank=False, null=False, unique=True)
+    name = models.CharField(max_length=64, blank=False, null=False)
     price = models.PositiveIntegerField(default=0)  # in rubles
     amount = models.PositiveIntegerField(default=0, null=False)  # in standard units
 

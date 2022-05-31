@@ -7,3 +7,4 @@ class User(models.Model):
     products_count = models.PositiveIntegerField(default=0, null=False)
     orders_count = models.PositiveIntegerField(default=0, null=False)
     materials_count = models.PositiveIntegerField(default=0, null=False)
+    notifications_enabled = models.BooleanField(default=True, null=False)

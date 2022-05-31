@@ -15,17 +15,20 @@ class Order(models.Model):
     CREATED = 'CR'
     COMPLETED_IN_TIME = 'CO'
     COMPLETED_WITH_DELAY = 'COWD'
+    CANCELLED = 'CAN'
 
     ORDER_STATUS_CHOICES = [
         (CREATED, 'CREATED'),
         (COMPLETED_IN_TIME, 'COMPLETED_IN_TIME'),
-        (COMPLETED_WITH_DELAY, 'COMPLETED_WITH_DELAY')
+        (COMPLETED_WITH_DELAY, 'COMPLETED_WITH_DELAY'),
+        (CANCELLED, 'CANCELLED')
     ]
 
     ORDER_STATUS_RUS = {
         CREATED: 'создан',
         COMPLETED_IN_TIME: 'завершен вовремя',
-        COMPLETED_WITH_DELAY: 'завершен с опозданием'
+        COMPLETED_WITH_DELAY: 'завершен с опозданием',
+        CANCELLED: 'отменен'
     }
 
     status = models.CharField(max_length=4, choices=ORDER_STATUS_CHOICES, default=CREATED)
@@ -34,6 +37,9 @@ class Order(models.Model):
 
     def is_completed(self):
         return self.status == Order.COMPLETED_IN_TIME or self.status == Order.COMPLETED_WITH_DELAY
+
+    def is_cancelled(self):
+        return self.status == Order.CANCELLED
 
     def get_products_str(self):
         order_products = OrderProducts.objects.filter(order=self)

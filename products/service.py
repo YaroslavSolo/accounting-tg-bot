@@ -4,8 +4,8 @@ from tgusers.models import User
 from .models import Product, ProductMaterials
 
 
-PRODUCT_LIMIT = 4
-PRODUCT_NAMES_LIMIT = 8
+PRODUCT_LIMIT = 3
+PRODUCT_NAMES_LIMIT = 6
 
 
 @sync_to_async
@@ -55,7 +55,7 @@ def get_products_str(user_id, offset, limit=PRODUCT_LIMIT):
 
 
 @sync_to_async
-def get_product_names(user_id, offset, limit=PRODUCT_NAMES_LIMIT):
+def get_product_names_and_ids(user_id, offset, limit=PRODUCT_NAMES_LIMIT):
     return list(Product.objects.filter(user_id=user_id).order_by('name').values_list('name', flat=True)[offset:offset + limit])
 
 
@@ -72,9 +72,9 @@ def get_products_count(user_id):
 @sync_to_async
 @transaction.atomic
 def delete_product(user_id, name):
-    num, _ = Product.objects.filter(user_id=user_id, name=name).delete()
+    Product.objects.filter(user_id=user_id, name=name).delete()
     user = User.objects.filter(telegram_id=user_id).first()
-    user.products_count -= num
+    user.products_count -= 1
     user.save()
 
 

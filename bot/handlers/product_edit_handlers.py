@@ -30,7 +30,7 @@ async def edit_product(message: types.Message, state: FSMContext):
     global offset
     offset = 0
 
-    product_names = await get_product_names(message.chat.id, offset)
+    product_names = await get_product_names_and_ids(message.chat.id, offset)
     if not product_names:
         await message.answer('Нет сохраненных товаров', reply_markup=main_kb)
         await state.finish()
@@ -51,7 +51,7 @@ async def edit_product_next(callback: types.CallbackQuery):
         return
 
     offset += PRODUCT_NAMES_LIMIT
-    names_kb = build_item_selection_kb(await get_product_names(callback.message.chat.id, offset))
+    names_kb = build_item_selection_kb(await get_product_names_and_ids(callback.message.chat.id, offset))
 
     await callback.message.edit_reply_markup(names_kb)
     await callback.answer()
@@ -67,7 +67,7 @@ async def edit_product_prev(callback: types.CallbackQuery):
     if offset < 0:
         offset = 0
 
-    names_kb = build_item_selection_kb(await get_product_names(callback.message.chat.id, offset))
+    names_kb = build_item_selection_kb(await get_product_names_and_ids(callback.message.chat.id, offset))
 
     await callback.message.edit_reply_markup(names_kb)
     await callback.answer()
@@ -77,7 +77,10 @@ async def edit_selected_product_menu(callback: types.CallbackQuery):
     await callback.message.delete()
     product_name = callback.data.split(':')[1]
     await callback.message.answer(await get_product_str(callback.message.chat.id, product_name), parse_mode='markdown')
-    await callback.message.answer('Выберите параметр для изменения', reply_markup=build_product_edit_kb(product_name))
+    await callback.message.answer(
+        'Выберите параметр для изменения или действие',
+        reply_markup=build_product_edit_kb(product_name)
+    )
     await callback.answer()
     await ProductEditStates.next()
 
@@ -218,7 +221,7 @@ async def save_product(callback: types.CallbackQuery, state: FSMContext):
     await sync_to_async(product.refresh_from_db)()
     await state.finish()
     await callback.message.answer(
-        f'Информация о продукте сохранена:\n\n{await sync_to_async(product.__str__)()}',
+        f'Информация о товаре сохранена:\n\n{await sync_to_async(product.__str__)()}',
         parse_mode='markdown',
         reply_markup=main_kb
     )
@@ -226,7 +229,6 @@ async def save_product(callback: types.CallbackQuery, state: FSMContext):
 
 
 async def clear_selected_product_materials(callback: types.CallbackQuery, state: FSMContext):
-    print('fuuuck')
     await clear_materials(callback.message.chat.id, callback.data.split(':')[1])
     await callback.message.answer('Список материалов очищен', reply_markup=main_kb)
     await callback.answer('Список материалов очищен')
@@ -253,7 +255,7 @@ def register_handlers(dispatcher: Dispatcher):
     )
     dispatcher.register_callback_query_handler(
         edit_selected_product_menu,
-        cb.filter(action=['edit']),
+        cb.filter(action=['e']),
         state=ProductEditStates.select_product
     )
     dispatcher.register_callback_query_handler(
@@ -278,7 +280,7 @@ def register_handlers(dispatcher: Dispatcher):
     )
     dispatcher.register_callback_query_handler(
         add_selected_material,
-        cb.filter(action=['edit']),
+        cb.filter(action=['e']),
         state=ProductEditStates.select_material
     )
     dispatcher.register_message_handler(

@@ -36,7 +36,7 @@ async def edit_selected_order_menu(message: types.Message):
     if await get_order(message.chat.id, order_id) is not None:
         await message.answer(await get_order_str(message.chat.id, order_id), parse_mode='markdown')
         await message.answer(
-            '\nВыберите поле для изменения',
+            '\nВыберите параметр для изменения',
             parse_mode='markdown',
             reply_markup=build_order_edit_kb(order_id)
         )
@@ -115,6 +115,14 @@ async def finish_selected_order(callback: types.CallbackQuery, state: FSMContext
     await state.finish()
 
 
+async def cancel_selected_order(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
+    await cancel_order(callback.message.chat.id, int(callback.data.split(':')[1]))
+    await callback.message.answer('Заказ отменен', reply_markup=main_kb)
+    await callback.answer('Заказ отменен')
+    await state.finish()
+
+
 def register_handlers(dispatcher: Dispatcher):
     dispatcher.register_message_handler(edit_selected_order_menu, state=OrderEditStates.select_product)
     dispatcher.register_callback_query_handler(
@@ -130,6 +138,11 @@ def register_handlers(dispatcher: Dispatcher):
     dispatcher.register_callback_query_handler(
         finish_selected_order,
         cb.filter(action=['finish']),
+        state=OrderEditStates.select_operation
+    )
+    dispatcher.register_callback_query_handler(
+        cancel_selected_order,
+        cb.filter(action=['cancel']),
         state=OrderEditStates.select_operation
     )
     dispatcher.register_message_handler(edit_selected_order_option_save, state=OrderEditStates.save_changes)
