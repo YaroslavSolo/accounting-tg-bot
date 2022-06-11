@@ -1,11 +1,11 @@
-from datetime import datetime, timezone
+from datetime import datetime
 
 from django.core.management.base import BaseCommand
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram.utils import executor
-from asgiref.sync import sync_to_async
 
-from bot.models import DeadlineNotification
+from orders.service import *
+from bot.service import *
 from bot.bot_init import bot, dispatcher
 from bot.handlers import product_handlers, order_handlers, material_handlers, statistics_handlers, other_handlers
 
@@ -14,21 +14,24 @@ scheduler = AsyncIOScheduler()
 job = None
 
 
-async def notify():
-    print('Notify job started')
-    # notifications = await sync_to_async(DeadlineNotification.objects.all)()
-    # for notification in notifications:
-    #     if notification.user_id.notifications_enabled and datetime.now().replace(tzinfo=timezone.utc) > notification.order.deadline_time.replace(tzinfo=timezone.utc):
-    #         await bot.send_message(notification.user_id, '')
-    #     notification.delete()
-    await bot.send_message(717389478, '')
+async def process_notifications():
+    print('Started processing notifications')
 
-    print('Notify job finished')
+    notifications_count = await get_notifications_count()
+    offset = 0
+    batch_size = 100
+    while offset < notifications_count:
+        for user_id, order_id in await process_notifications_batch(offset, batch_size):
+            await bot.send_message(user_id, '❗️ Менее чем через 5 часов наступает дедлайн заказа: ')
+            await bot.send_message(user_id, await get_order_str(user_id, order_id), parse_mode='markdown')
+        offset += batch_size
+
+    print('Finished processing notifications')
 
 
 def start_job():
     global job
-    job = scheduler.add_job(notify, 'interval', seconds=10)
+    job = scheduler.add_job(process_notifications, 'interval', seconds=10)
     try:
         print('Scheduler started')
         scheduler.start()
@@ -55,7 +58,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Telegram Bot stopped successfully'))
 
     def handle(self, *args, **options):
-        # dispatcher.register_errors_handler(error_handler)
+        dispatcher.register_errors_handler(error_handler)
         other_handlers.register_handlers(dispatcher)
         product_handlers.register_handlers(dispatcher)
         order_handlers.register_handlers(dispatcher)

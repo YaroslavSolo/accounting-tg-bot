@@ -78,7 +78,7 @@ def build_product_edit_kb(product_name):
         callback_data=cb.new(id=product_name, action='amount')
     )
     materials_button = InlineKeyboardButton(
-        text='Указать маретиалы',
+        text='Указать материалы',
         callback_data=cb.new(id=product_name, action='add_materials')
     )
     clear_materials_button = InlineKeyboardButton(

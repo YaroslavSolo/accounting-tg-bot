@@ -10,6 +10,7 @@ from aiogram.types import ReplyKeyboardRemove, InlineKeyboardButton
 
 from orders.service import *
 from products.service import *
+from bot.service import *
 from bot.validators.order_validators import *
 from bot.validators.common_validators import *
 from bot.keyboards import main_kb, build_item_selection_kb
@@ -58,6 +59,7 @@ async def add_order_deadline_time(message: types.Message, state: FSMContext):
 
     async with state.proxy() as order:
         order['saved_order'] = await save_order(order, message.chat.id)
+        await save_notification(order['saved_order'])
 
     global offset
     offset = 0

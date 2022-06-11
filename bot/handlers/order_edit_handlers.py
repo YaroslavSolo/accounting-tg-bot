@@ -9,6 +9,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from orders.service import *
 from products.service import *
+from bot.service import *
 from bot.bot_init import bot
 from bot.validators.order_validators import *
 from bot.validators.common_validators import *
@@ -85,6 +86,7 @@ async def edit_selected_order_option_save(message: types.Message, state: FSMCont
             year=new_deadline_date.year
         )
         order.deadline_time = new_deadline_date
+        await save_notification_if_not_exists(order)
     elif option == 'deadline_time':
         await validate_deadline_time(message)
         new_deadline_time = datetime.datetime.strptime(message.text, '%H:%M')
@@ -93,6 +95,7 @@ async def edit_selected_order_option_save(message: types.Message, state: FSMCont
             minute=new_deadline_time.minute
         )
         order.deadline_time = new_deadline_time
+        await save_notification_if_not_exists(order)
 
     await sync_to_async(order.save)()
     await message.answer('Изменения сохранены', reply_markup=main_kb)
